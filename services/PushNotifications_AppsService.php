@@ -40,7 +40,7 @@ class PushNotifications_AppsService extends BaseApplicationComponent
     }
 
     /**
-     * Returns all apps.
+     * Returns all apps that the user has permissions for.
      *
      * @param string|null $indexBy
      *
@@ -48,8 +48,27 @@ class PushNotifications_AppsService extends BaseApplicationComponent
      */
     public function getAllApps($indexBy = null)
     {
+        # get the current user
+        $user = craft()->userSession->getUser();
+
         if (!$this->_fetchedAllApps) {
             $appRecords = PushNotifications_AppRecord::model()->ordered()->findAll();
+
+            # keep track of where we are in the array
+            $count = 0;
+
+            # Check to see if the user has permission for each app
+            foreach($appRecords as $appRecord)
+            {
+                $permission = $user->can($appRecord->name);
+                if($permission != 1)
+                {
+                    // Remove the app that the user does not have permissions for.
+                    unset($appRecords[$count]);
+                }
+                $count = $count + 1;
+            }
+
             $this->_appsById = PushNotifications_AppModel::populateModels($appRecords, 'id');
             $this->_fetchedAllApps = true;
         }
