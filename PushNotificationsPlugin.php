@@ -94,4 +94,21 @@ class PushNotificationsPlugin extends BasePlugin
             'pushnotifications' => array('action' => 'pushNotifications/notification/notificationIndex'),
         );
     }
+
+
+    public function registerUserPermissions()
+    {
+        # get array of available apps
+        $apps = craft()->pushNotifications_apps->getAllApps();
+        $apps_labels = array();
+
+        # create an array with label configurations
+        foreach($apps as $app)
+        {
+            $apps_labels[trim($app)] = array('label' => $app);
+        }
+
+        # return an array of available apps
+        return $apps_labels;
+    }
 }

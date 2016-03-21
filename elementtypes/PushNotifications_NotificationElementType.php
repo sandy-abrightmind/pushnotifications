@@ -76,11 +76,34 @@ class PushNotifications_NotificationElementType extends BaseElementType
      */
     public function getSources($context = null)
     {
-        $sources = array(
-            '*' => array(
-                'label'    => Craft::t('All notifications'),
-            ),
-        );
+        $user = craft()->userSession->getUser();
+
+        if($user->can('admin'))
+        {
+            $sources = array(
+                '*' => array(
+                    'label'    => Craft::t('All notifications'),
+                ),
+            );
+        }
+        else {
+            // only display the notifications for the apps that the user has access to
+
+            // get list of app ids that the user has access to
+            $myIds = array();
+
+            foreach(craft()->pushNotifications_apps->getAllApps() as $app)
+            {
+                $myIds[] = $app->id;
+            }
+
+            $sources = array(
+                '*' => array(
+                    'label' => Craft::t('All notifications'),
+                    'criteria' => array('appId' => $myIds),
+                ),
+            );
+        }
 
         foreach (craft()->pushNotifications_apps->getAllApps() as $app) {
             $key = 'app:'.$app->id;
@@ -200,6 +223,7 @@ class PushNotifications_NotificationElementType extends BaseElementType
      */
     public function modifyElementsQuery(DbCommand $query, ElementCriteriaModel $criteria)
     {
+
         $query
             ->addSelect('pushnotifications_notifications.appId, pushnotifications_notifications.title, pushnotifications_notifications.body, pushnotifications_notifications.command, pushnotifications_notifications.schedule')
             ->join('pushnotifications_notifications pushnotifications_notifications', 'pushnotifications_notifications.id = elements.id');
