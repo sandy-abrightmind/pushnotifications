@@ -220,13 +220,13 @@ class PushNotifications_AppsService extends BaseApplicationComponent
             // Grab the notification ids so we can clean the elements table.
             $notificationIds = craft()->db->createCommand()
                 ->select('id')
-                ->from('notifications')
+                ->from('pushnotifications_notifications')
                 ->where(array('appId' => $appId))
                 ->queryColumn();
 
             craft()->elements->deleteElementById($notificationIds);
 
-            $affectedRows = craft()->db->createCommand()->delete('notifications_apps', array('id' => $appId));
+            $affectedRows = craft()->db->createCommand()->delete('pushnotifications_apps', array('id' => $appId));
 
             if ($transaction !== null) {
                 $transaction->commit();
